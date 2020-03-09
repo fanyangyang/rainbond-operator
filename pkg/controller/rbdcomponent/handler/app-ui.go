@@ -49,7 +49,7 @@ func NewAppUI(ctx context.Context, client client.Client, component *rainbondv1al
 }
 
 func (a *appui) Before() error {
-	db, err := getDefaultDBInfo(a.ctx, a.client, a.cluster.Spec.RegionDatabase, a.component.Namespace, DBName)
+	db, err := getDefaultDBInfo(a.ctx, a.client, a.cluster.Spec.UIDatabase, a.component.Namespace, DBName)
 	if err != nil {
 		return fmt.Errorf("get db info: %v", err)
 	}
@@ -150,6 +150,10 @@ func (a *appui) deploymentForAppUI() interface{} {
 								{
 									Name:  "REGION_TCP_DOMAIN",
 									Value: a.cluster.GatewayIngressIP(),
+								},
+								{
+									Name:  "IMAGE_REPO",
+									Value: a.cluster.Spec.ImageHub.Domain,
 								},
 							},
 							VolumeMounts: []corev1.VolumeMount{

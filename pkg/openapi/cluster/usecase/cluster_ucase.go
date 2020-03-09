@@ -15,6 +15,7 @@ import (
 	"github.com/goodrain/rainbond-operator/pkg/util/rbdutil"
 	"github.com/goodrain/rainbond-operator/pkg/util/uuidutil"
 
+	"k8s.io/apimachinery/pkg/api/errors"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/fields"
@@ -73,6 +74,16 @@ func (c *clusterUsecase) UnInstall() error {
 	// delete storage class and csidriver
 	if err := c.clientset.StorageV1().StorageClasses().DeleteCollection(deleteOpts, metav1.ListOptions{LabelSelector: rainbondLabelSelector}); err != nil {
 		return fmt.Errorf("delete storageclass: %v", err)
+	}
+	if err := c.clientset.StorageV1().StorageClasses().Delete("rainbondslsc", &metav1.DeleteOptions{}); err != nil {
+		if errors.IsNotFound(err) {
+			return fmt.Errorf("delete storageclass rainbondslsc: %v", err)
+		}
+	}
+	if err := c.clientset.StorageV1().StorageClasses().Delete("rainbondsssc", &metav1.DeleteOptions{}); err != nil {
+		if errors.IsNotFound(err) {
+			return fmt.Errorf("delete storageclass rainbondsssc: %v", err)
+		}
 	}
 	if err := c.clientset.StorageV1beta1().CSIDrivers().DeleteCollection(deleteOpts, metav1.ListOptions{LabelSelector: rainbondLabelSelector}); err != nil {
 		return fmt.Errorf("delete csidriver: %v", err)
